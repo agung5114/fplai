@@ -156,7 +156,7 @@ def select_subs(expected_scores, prices, positions, clubs):
     model.solve()
     return decisions
 
-def select_main(expected_scores, prices, positions, clubs, subbudget,df,mid,fw):
+def select_main(expected_scores, prices, positions, clubs, subbudget):
     num_players = len(expected_scores)
     model = pulp.LpProblem("Constrained value maximisation", pulp.LpMaximize)
     decisions = [
@@ -201,4 +201,160 @@ def select_main(expected_scores, prices, positions, clubs, subbudget,df,mid,fw):
     model.solve()
     return decisions, captain_decisions
 
+def select_subs2(expected_scores, prices, positions, clubs):
+    num_players = len(expected_scores)
+    model = pulp.LpProblem("Constrained value maximisation", pulp.LpMinimize)
+    decisions = [
+      pulp.LpVariable("x{}".format(i), lowBound=0, upBound=1, cat='Integer')
+      for i in range(num_players)
+    ]
+    captain_decisions = [
+      pulp.LpVariable("y{}".format(i), lowBound=0, upBound=1, cat='Integer')
+      for i in range(num_players)
+    ]
 
+    # objective function:
+    model += sum((decisions[i]) * prices[i]
+                for i in range(num_players)), "Objective"
+
+    # cost constraint
+    # model += sum(decisions[i] * prices[i] for i in range(num_players)) <= 100  # total cost
+    model += sum(decisions) == 4  # total team size
+
+    # position constraints
+    # 1 goalkeeper
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 1) == 1
+    # 3-5 defenders
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 2) == 2
+    # 3-5 midfielders
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 3) == 1
+    # 1-3 attackers
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 4) == 0
+
+    # club constraint
+    for club_id in np.unique(clubs):
+      model += sum(decisions[i] for i in range(num_players) if clubs[i] == club_id) <= 3  # max 3 players
+
+    model.solve()
+    return decisions
+
+def select_main2(expected_scores, prices, positions, clubs, subbudget):
+    num_players = len(expected_scores)
+    model = pulp.LpProblem("Constrained value maximisation", pulp.LpMaximize)
+    decisions = [
+      pulp.LpVariable("x{}".format(i), lowBound=0, upBound=1, cat='Integer')
+      for i in range(num_players)
+    ]
+    captain_decisions = [
+      pulp.LpVariable("y{}".format(i), lowBound=0, upBound=1, cat='Integer')
+      for i in range(num_players)
+    ]
+
+    # objective function:
+    model += sum((captain_decisions[i] + decisions[i]) * expected_scores[i]
+                 for i in range(num_players)), "Objective"
+
+    # cost constraint
+    model += sum(decisions[i] * prices[i] for i in range(num_players)) <= (100-subbudget)  # total cost
+    model += sum(decisions) == 11  # total team size
+
+    # position constraints
+    # 1 goalkeeper
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 1) == 1
+    # 3-5 defenders
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 2) == 3
+    # 3-5 midfielders
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 3) == 4
+    # 1-3 attackers
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 4) == 3
+
+    # club constraint
+    for club_id in np.unique(clubs):
+      model += sum(decisions[i] for i in range(num_players) if clubs[i] == club_id) <= 3  # max 3 players
+
+    model += sum(captain_decisions) == 1  # 1 captain
+
+    for i in range(num_players):  # captain must also be on team
+      model += (decisions[i] - captain_decisions[i]) >= 0
+
+    model.solve()
+    return decisions, captain_decisions
+
+def select_subs3(expected_scores, prices, positions, clubs):
+    num_players = len(expected_scores)
+    model = pulp.LpProblem("Constrained value maximisation", pulp.LpMinimize)
+    decisions = [
+      pulp.LpVariable("x{}".format(i), lowBound=0, upBound=1, cat='Integer')
+      for i in range(num_players)
+    ]
+    captain_decisions = [
+      pulp.LpVariable("y{}".format(i), lowBound=0, upBound=1, cat='Integer')
+      for i in range(num_players)
+    ]
+
+    # objective function:
+    model += sum((decisions[i]) * prices[i]
+                for i in range(num_players)), "Objective"
+
+    # cost constraint
+    # model += sum(decisions[i] * prices[i] for i in range(num_players)) <= 100  # total cost
+    model += sum(decisions) == 4  # total team size
+
+    # position constraints
+    # 1 goalkeeper
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 1) == 1
+    # 3-5 defenders
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 2) == 1
+    # 3-5 midfielders
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 3) == 2
+    # 1-3 attackers
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 4) == 0
+
+    # club constraint
+    for club_id in np.unique(clubs):
+      model += sum(decisions[i] for i in range(num_players) if clubs[i] == club_id) <= 3  # max 3 players
+
+    model.solve()
+    return decisions
+
+def select_main3(expected_scores, prices, positions, clubs, subbudget):
+    num_players = len(expected_scores)
+    model = pulp.LpProblem("Constrained value maximisation", pulp.LpMaximize)
+    decisions = [
+      pulp.LpVariable("x{}".format(i), lowBound=0, upBound=1, cat='Integer')
+      for i in range(num_players)
+    ]
+    captain_decisions = [
+      pulp.LpVariable("y{}".format(i), lowBound=0, upBound=1, cat='Integer')
+      for i in range(num_players)
+    ]
+
+    # objective function:
+    model += sum((captain_decisions[i] + decisions[i]) * expected_scores[i]
+                 for i in range(num_players)), "Objective"
+
+    # cost constraint
+    model += sum(decisions[i] * prices[i] for i in range(num_players)) <= (100-subbudget)  # total cost
+    model += sum(decisions) == 11  # total team size
+
+    # position constraints
+    # 1 goalkeeper
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 1) == 1
+    # 3-5 defenders
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 2) == 4
+    # 3-5 midfielders
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 3) == 4
+    # 1-3 attackers
+    model += sum(decisions[i] for i in range(num_players) if positions[i] == 4) == 3
+
+    # club constraint
+    for club_id in np.unique(clubs):
+      model += sum(decisions[i] for i in range(num_players) if clubs[i] == club_id) <= 3  # max 3 players
+
+    model += sum(captain_decisions) == 1  # 1 captain
+
+    for i in range(num_players):  # captain must also be on team
+      model += (decisions[i] - captain_decisions[i]) >= 0
+
+    model.solve()
+    return decisions, captain_decisions
