@@ -5,14 +5,15 @@ import streamlit as st
 from PIL import Image
 st.set_page_config(layout='wide')
 from st_aggrid import AgGrid
-
+import plotly_express as px
 from data import get_data, update_data, select_team, select_subs, select_main,select_subs2, select_main2,select_subs3, select_main3
 
-@st.cache
-def fetch(url):
-    df = pd.read_csv(url)
-    return df
-df = fetch('fpldata.csv')
+# @st.cache
+# def fetch(url):
+#     df = pd.read_csv(url)
+#     return df
+# df = fetch('fpldata.csv')
+df = pd.read_csv('fpldata.csv')
 dff = pd.read_csv('fplstats.csv')
 
 # import base64
@@ -258,8 +259,15 @@ if choice == "Team_Selection":
             for i in range(dff.shape[0]):
                 if captmain[i].value() == 1:
                     st.write(f'Captain: {names[i]}')
-
 elif choice=="Player_Analysis":
-    AgGrid(df,fit_columns_on_grid_load=True)
-    # st.dataframe(df)
-    # st._arrow_dataframe(df.style.highlight_max(axis=0))
+    k1,k2 = st.columns((3,2))
+    with k1:
+        # AgGrid(df,fit_columns_on_grid_load=True)
+        st.dataframe(df)
+        # st._arrow_dataframe(df.style.highlight_max(axis=0))
+    with k2:
+        dfpoint = df.nlargest(5, 'Total_Points')
+        dfpoint=dfpoint.sort_values('Total_Points', ascending = True)
+        fig = px.bar(dfpoint,y='Name',x='Total_Points',orientation='h')
+        st.plotly_chart (fig)
+

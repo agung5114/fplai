@@ -2,3 +2,4 @@ streamlit
 pillow
 pulp
 streamlit-aggrid
+plotly-express
