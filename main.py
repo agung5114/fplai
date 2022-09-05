@@ -16,24 +16,6 @@ from data import get_data, update_data, select_team, select_subs, select_main,se
 df = pd.read_csv('fpldata.csv')
 dff = pd.read_csv('fplstats.csv')
 
-# import base64
-# def get_base64(bin_file):
-#     with open(bin_file, 'rb') as f:
-#         data = f.read()
-#     return base64.b64encode(data).decode()
-# def set_background(png_file):
-#     bin_str = get_base64(png_file)
-#     page_bg_img = '''
-#     <style>
-#     .stApp {
-#     background-image: url("data:image/png;base64,%s");
-#     background-size: cover;
-#     }
-#     </style>
-#     ''' % bin_str
-#     st.markdown(page_bg_img, unsafe_allow_html=True)
-# set_background('pitch.jpg')
-# st.title('Fantasy PL-AI')
 st.image(Image.open('header.png'))
 st.title("Fantasy Premier League - Artificial Intelligence")
 st.sidebar.image(Image.open('Fantasy PL-ai-logos_transparent.png'))
@@ -85,7 +67,7 @@ if choice == "Team_Selection":
         # st.table(dfteam[['Player_Name','Scores','Price','Position']])
         # st.table(dfteam.sort_values(by='Pos_code'))
         # st.write(f'Player: {names[i],scores[i],price[i],position[pos[i]]}')
-        st.write(f'Total Budget : {total}')
+        st.write(f'Total Budget : '+'{:.2f}'.format(total))
         st.write(f'Total Scores Generated : '+'{:.2f}'.format(totalscore))
         for i in range(dff.shape[0]):
             if captains[i].value()==1:
@@ -114,7 +96,7 @@ if choice == "Team_Selection":
 
             dfdict2 = {'Player_Name':subName, 'Scores':subScore, 'Price':subPrice, 'Pos_code': subPos_code,'Position':subPosition}
             dfsubs = pd.DataFrame(dfdict2)
-            st.write(f'Total Subs Budget:{subtotal}')
+            st.write(f'Total Subs Budget: '+'{:.2f}'.format(subtotal))
             dfsubs = dfsubs.sort_values(by='Pos_code')
             dfsubs.loc[:, "Scores"] = dfsubs["Scores"].map('{:.2f}'.format)
             AgGrid(dfsubs[['Player_Name','Scores','Price','Position']],fit_columns_on_grid_load=True)
@@ -137,12 +119,12 @@ if choice == "Team_Selection":
 
             dfdict3 = {'Player_Name':mainName, 'Scores':mainScore, 'Price':mainPrice, 'Pos_code': mainPos_code,'Position':mainPosition}
             dfmain = pd.DataFrame(dfdict3)
-            st.write(f'Total Main Budget:{maintotal}')
+            st.write(f'Total Main Budget: '+'{:.2f}'.format(maintotal))
             dfmain = dfmain.sort_values(by='Pos_code')
             totalmain = dfmain.Scores.sum()
             dfmain.loc[:, "Scores"] = dfmain["Scores"].map('{:.2f}'.format)
             AgGrid(dfmain[['Player_Name','Scores','Price','Position']],fit_columns_on_grid_load=True)
-            st.write(f'Total Budget:{maintotal + subtotal}')
+            st.write(f'Total Budget: '+'{:.2f}'.format(maintotal + subtotal))
             st.write(f'Total Scores Generated : ' + '{:.2f}'.format(totalmain))
 
             for i in range(dff.shape[0]):
@@ -168,7 +150,7 @@ if choice == "Team_Selection":
             dfdict2 = {'Player_Name': subName, 'Scores': subScore, 'Price': subPrice, 'Pos_code': subPos_code,
                        'Position': subPosition}
             dfsubs = pd.DataFrame(dfdict2)
-            st.write(f'Total Subs Budget:{subtotal}')
+            st.write(f'Total Subs Budget: '+'{:.2f}'.format(subtotal))
             dfsubs = dfsubs.sort_values(by='Pos_code')
             dfsubs.loc[:, "Scores"] = dfsubs["Scores"].map('{:.2f}'.format)
             AgGrid(dfsubs[['Player_Name','Scores','Price','Position']],fit_columns_on_grid_load=True)
@@ -192,12 +174,12 @@ if choice == "Team_Selection":
             dfdict3 = {'Player_Name': mainName, 'Scores': mainScore, 'Price': mainPrice, 'Pos_code': mainPos_code,
                        'Position': mainPosition}
             dfmain = pd.DataFrame(dfdict3)
-            st.write(f'Total Main Budget:{maintotal}')
+            st.write(f'Total Main Budget: '+'{:.2f}'.format(maintotal))
             dfmain = dfmain.sort_values(by='Pos_code')
             totalmain = dfmain.Scores.sum()
             dfmain.loc[:, "Scores"] = dfmain["Scores"].map('{:.2f}'.format)
             AgGrid(dfmain[['Player_Name','Scores','Price','Position']],fit_columns_on_grid_load=True)
-            st.write(f'Total Budget:{maintotal + subtotal}')
+            st.write(f'Total Budget: '+'{:.2f}'.format(maintotal + subtotal))
             st.write(f'Total Scores Generated : ' + '{:.2f}'.format(totalmain))
 
             for i in range(dff.shape[0]):
@@ -223,7 +205,7 @@ if choice == "Team_Selection":
             dfdict2 = {'Player_Name': subName, 'Scores': subScore, 'Price': subPrice, 'Pos_code': subPos_code,
                        'Position': subPosition}
             dfsubs = pd.DataFrame(dfdict2)
-            st.write(f'Total Subs Budget:{subtotal}')
+            st.write(f'Total Subs Budget:'+'{:.2f}'.format(subtotal))
             dfsubs = dfsubs.sort_values(by='Pos_code')
             dfsubs.loc[:, "Scores"] = dfsubs["Scores"].map('{:.2f}'.format)
             AgGrid(dfsubs[['Player_Name','Scores','Price','Position']],fit_columns_on_grid_load=True)
@@ -247,12 +229,12 @@ if choice == "Team_Selection":
             dfdict3 = {'Player_Name': mainName, 'Scores': mainScore, 'Price': mainPrice, 'Pos_code': mainPos_code,
                        'Position': mainPosition}
             dfmain = pd.DataFrame(dfdict3)
-            st.write(f'Total Main Budget:{maintotal}')
+            st.write(f'Total Main Budget: '+'{:.2f}'.format(maintotal))
             dfmain = dfmain.sort_values(by='Pos_code')
             totalmain = dfmain.Scores.sum()
             dfmain.loc[:, "Scores"] = dfmain["Scores"].map('{:.2f}'.format)
             AgGrid(dfmain[['Player_Name','Scores','Price','Position']])
-            st.write(f'Total Budget:{maintotal + subtotal}')
+            st.write(f'Total Budget: '+'{:.2f}'.format(maintotal + subtotal))
             st.write(f'Total Scores Generated : ' + '{:.2f}'.format(totalmain))
 
 
