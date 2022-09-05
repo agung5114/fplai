@@ -13,8 +13,16 @@ from data import get_data, update_data, select_team, select_subs, select_main,se
 #     df = pd.read_csv(url)
 #     return df
 # df = fetch('fpldata.csv')
-df = pd.read_csv('fpldata.csv')
-dff = pd.read_csv('fplstats.csv')
+df = pd.read_csv('fpldata2.csv')
+dff = pd.read_csv('fplstats2.csv')
+# Converting links to html tags
+def path_to_image_html(path):
+    return '<img src="' + path + '" width="60" >'
+
+@st.cache
+def convert_df(input_df):
+    # IMPORTANT: Cache the conversion to prevent computation on every rerun
+    return input_df.to_html(escape=False, formatters=dict(Photo=path_to_image_html))
 
 st.image(Image.open('header.png'))
 st.title("Fantasy Premier League - Artificial Intelligence")
@@ -42,6 +50,7 @@ if choice == "Team_Selection":
         # pos.append(position[i['element_type']])
         price = dff['Price']
         team = dff['Team_code']
+        photo = dff['Photo']
         decisions, captains = select_team(scores.values,price.values,pos.values,team.values)
         total = 0.0
         Name =[]
@@ -49,6 +58,7 @@ if choice == "Team_Selection":
         Price =[]
         Position =[]
         Pos_code=[]
+        Photo =[]
         for i in range(dff.shape[0]):
             if decisions[i].value()!=0:
                 Name.append(names[i])
@@ -56,17 +66,20 @@ if choice == "Team_Selection":
                 Price.append(price[i])
                 Pos_code.append(pos[i])
                 Position.append(position[pos[i]])
+                Photo.append((photo[i]))
                 total = total + float(price[i])
 
-        dfdict = {'Player_Name':Name, 'Scores':Score, 'Price':Price, 'Pos_code': Pos_code,'Position':Position}
+        dfdict = {'Player_Name':Name, 'Scores':Score, 'Price':Price, 'Pos_code': Pos_code,'Position':Position,'Photo':Photo}
         dfteam = pd.DataFrame(dfdict)
         dfteam = dfteam.sort_values(by='Pos_code')
         totalscore = dfteam.Scores.sum()
         dfteam.loc[:, "Scores"] = dfteam["Scores"].map('{:.2f}'.format)
-        AgGrid(dfteam[['Player_Name','Scores','Price','Position']],fit_columns_on_grid_load=True)
-        # st.table(dfteam[['Player_Name','Scores','Price','Position']])
-        # st.table(dfteam.sort_values(by='Pos_code'))
-        # st.write(f'Player: {names[i],scores[i],price[i],position[pos[i]]}')
+        # AgGrid(dfteam[['Player_Name','Scores','Price','Position']],fit_columns_on_grid_load=True)
+        html1 = convert_df(dfteam)
+        st.markdown(
+            html1,
+            unsafe_allow_html=True
+        )
         st.write(f'Total Budget : '+'{:.2f}'.format(total))
         st.write(f'Total Scores Generated : '+'{:.2f}'.format(totalscore))
         for i in range(dff.shape[0]):
@@ -79,173 +92,88 @@ if choice == "Team_Selection":
         selectForm = st.selectbox("Select Formation", formation)
         if selectForm =='442':
             subs = select_subs(scores.values,price.values,pos.values,team.values)
-            subtotal = 0.0
-            subName =[]
-            subScore = []
-            subPrice =[]
-            subPosition =[]
-            subPos_code=[]
-            for i in range(dff.shape[0]):
-                if subs[i].value()!=0:
-                    subName.append(names[i])
-                    subScore.append(scores[i])
-                    subPrice.append(price[i])
-                    subPos_code.append(pos[i])
-                    subPosition.append(position[pos[i]])
-                    subtotal = subtotal + float(price[i])
-
-            dfdict2 = {'Player_Name':subName, 'Scores':subScore, 'Price':subPrice, 'Pos_code': subPos_code,'Position':subPosition}
-            dfsubs = pd.DataFrame(dfdict2)
-            st.write(f'Total Subs Budget: '+'{:.2f}'.format(subtotal))
-            dfsubs = dfsubs.sort_values(by='Pos_code')
-            dfsubs.loc[:, "Scores"] = dfsubs["Scores"].map('{:.2f}'.format)
-            AgGrid(dfsubs[['Player_Name','Scores','Price','Position']],fit_columns_on_grid_load=True)
-
-            mains, captmain = select_main(scores.values,price.values,pos.values,team.values,subtotal)
-            maintotal = 0.0
-            mainName =[]
-            mainScore = []
-            mainPrice =[]
-            mainPosition =[]
-            mainPos_code=[]
-            for i in range(dff.shape[0]):
-                if mains[i].value()!=0:
-                    mainName.append(names[i])
-                    mainScore.append(scores[i])
-                    mainPrice.append(price[i])
-                    mainPos_code.append(pos[i])
-                    mainPosition.append(position[pos[i]])
-                    maintotal = maintotal + float(price[i])
-
-            dfdict3 = {'Player_Name':mainName, 'Scores':mainScore, 'Price':mainPrice, 'Pos_code': mainPos_code,'Position':mainPosition}
-            dfmain = pd.DataFrame(dfdict3)
-            st.write(f'Total Main Budget: '+'{:.2f}'.format(maintotal))
-            dfmain = dfmain.sort_values(by='Pos_code')
-            totalmain = dfmain.Scores.sum()
-            dfmain.loc[:, "Scores"] = dfmain["Scores"].map('{:.2f}'.format)
-            AgGrid(dfmain[['Player_Name','Scores','Price','Position']],fit_columns_on_grid_load=True)
-            st.write(f'Total Budget: '+'{:.2f}'.format(maintotal + subtotal))
-            st.write(f'Total Scores Generated : ' + '{:.2f}'.format(totalmain))
-
-            for i in range(dff.shape[0]):
-                if captmain[i].value()==1:
-                    st.write(f'Captain: {names[i]}')
         elif selectForm =='343':
             subs = select_subs2(scores.values, price.values, pos.values, team.values)
-            subtotal = 0.0
-            subName = []
-            subScore = []
-            subPrice = []
-            subPosition = []
-            subPos_code = []
-            for i in range(dff.shape[0]):
-                if subs[i].value() != 0:
-                    subName.append(names[i])
-                    subScore.append(scores[i])
-                    subPrice.append(price[i])
-                    subPos_code.append(pos[i])
-                    subPosition.append(position[pos[i]])
-                    subtotal = subtotal + float(price[i])
-
-            dfdict2 = {'Player_Name': subName, 'Scores': subScore, 'Price': subPrice, 'Pos_code': subPos_code,
-                       'Position': subPosition}
-            dfsubs = pd.DataFrame(dfdict2)
-            st.write(f'Total Subs Budget: '+'{:.2f}'.format(subtotal))
-            dfsubs = dfsubs.sort_values(by='Pos_code')
-            dfsubs.loc[:, "Scores"] = dfsubs["Scores"].map('{:.2f}'.format)
-            AgGrid(dfsubs[['Player_Name','Scores','Price','Position']],fit_columns_on_grid_load=True)
-
-            mains, captmain = select_main2(scores.values, price.values, pos.values, team.values, subtotal)
-            maintotal = 0.0
-            mainName = []
-            mainScore = []
-            mainPrice = []
-            mainPosition = []
-            mainPos_code = []
-            for i in range(dff.shape[0]):
-                if mains[i].value() != 0:
-                    mainName.append(names[i])
-                    mainScore.append(scores[i])
-                    mainPrice.append(price[i])
-                    mainPos_code.append(pos[i])
-                    mainPosition.append(position[pos[i]])
-                    maintotal = maintotal + float(price[i])
-
-            dfdict3 = {'Player_Name': mainName, 'Scores': mainScore, 'Price': mainPrice, 'Pos_code': mainPos_code,
-                       'Position': mainPosition}
-            dfmain = pd.DataFrame(dfdict3)
-            st.write(f'Total Main Budget: '+'{:.2f}'.format(maintotal))
-            dfmain = dfmain.sort_values(by='Pos_code')
-            totalmain = dfmain.Scores.sum()
-            dfmain.loc[:, "Scores"] = dfmain["Scores"].map('{:.2f}'.format)
-            AgGrid(dfmain[['Player_Name','Scores','Price','Position']],fit_columns_on_grid_load=True)
-            st.write(f'Total Budget: '+'{:.2f}'.format(maintotal + subtotal))
-            st.write(f'Total Scores Generated : ' + '{:.2f}'.format(totalmain))
-
-            for i in range(dff.shape[0]):
-                if captmain[i].value() == 1:
-                    st.write(f'Captain: {names[i]}')
         elif selectForm =='433':
             subs = select_subs3(scores.values, price.values, pos.values, team.values)
-            subtotal = 0.0
-            subName = []
-            subScore = []
-            subPrice = []
-            subPosition = []
-            subPos_code = []
-            for i in range(dff.shape[0]):
-                if subs[i].value() != 0:
-                    subName.append(names[i])
-                    subScore.append(scores[i])
-                    subPrice.append(price[i])
-                    subPos_code.append(pos[i])
-                    subPosition.append(position[pos[i]])
-                    subtotal = subtotal + float(price[i])
 
-            dfdict2 = {'Player_Name': subName, 'Scores': subScore, 'Price': subPrice, 'Pos_code': subPos_code,
-                       'Position': subPosition}
-            dfsubs = pd.DataFrame(dfdict2)
-            st.write(f'Total Subs Budget:'+'{:.2f}'.format(subtotal))
-            dfsubs = dfsubs.sort_values(by='Pos_code')
-            dfsubs.loc[:, "Scores"] = dfsubs["Scores"].map('{:.2f}'.format)
-            AgGrid(dfsubs[['Player_Name','Scores','Price','Position']],fit_columns_on_grid_load=True)
+        subtotal = 0.0
+        subName =[]
+        subScore = []
+        subPrice =[]
+        subPosition =[]
+        subPos_code=[]
+        subPhoto=[]
+        for i in range(dff.shape[0]):
+            if subs[i].value()!=0:
+                subName.append(names[i])
+                subScore.append(scores[i])
+                subPrice.append(price[i])
+                subPos_code.append(pos[i])
+                subPosition.append(position[pos[i]])
+                subtotal = subtotal + float(price[i])
+                subPhoto.append(photo[i])
 
-            mains, captmain = select_main3(scores.values, price.values, pos.values, team.values, subtotal)
-            maintotal = 0.0
-            mainName = []
-            mainScore = []
-            mainPrice = []
-            mainPosition = []
-            mainPos_code = []
-            for i in range(dff.shape[0]):
-                if mains[i].value() != 0:
-                    mainName.append(names[i])
-                    mainScore.append(scores[i])
-                    mainPrice.append(price[i])
-                    mainPos_code.append(pos[i])
-                    mainPosition.append(position[pos[i]])
-                    maintotal = maintotal + float(price[i])
+        dfdict2 = {'Player_Name':subName, 'Scores':subScore, 'Price':subPrice, 'Pos_code': subPos_code,'Position':subPosition,'Photo':subPhoto}
+        dfsubs = pd.DataFrame(dfdict2)
+        dfsubs = dfsubs.sort_values(by='Pos_code')
+        dfsubs.loc[:, "Scores"] = dfsubs["Scores"].map('{:.2f}'.format)
+        # AgGrid(dfsubs[['Player_Name','Scores','Price','Position']],fit_columns_on_grid_load=True)
+        mains, captmain = select_main(scores.values,price.values,pos.values,team.values,subtotal)
+        maintotal = 0.0
+        mainName =[]
+        mainScore = []
+        mainPrice =[]
+        mainPosition =[]
+        mainPos_code=[]
+        mainPhoto=[]
+        for i in range(dff.shape[0]):
+            if mains[i].value()!=0:
+                mainName.append(names[i])
+                mainScore.append(scores[i])
+                mainPrice.append(price[i])
+                mainPos_code.append(pos[i])
+                mainPosition.append(position[pos[i]])
+                maintotal = maintotal + float(price[i])
+                mainPhoto.append(photo[i])
 
-            dfdict3 = {'Player_Name': mainName, 'Scores': mainScore, 'Price': mainPrice, 'Pos_code': mainPos_code,
-                       'Position': mainPosition}
-            dfmain = pd.DataFrame(dfdict3)
-            st.write(f'Total Main Budget: '+'{:.2f}'.format(maintotal))
-            dfmain = dfmain.sort_values(by='Pos_code')
-            totalmain = dfmain.Scores.sum()
-            dfmain.loc[:, "Scores"] = dfmain["Scores"].map('{:.2f}'.format)
-            AgGrid(dfmain[['Player_Name','Scores','Price','Position']])
-            st.write(f'Total Budget: '+'{:.2f}'.format(maintotal + subtotal))
-            st.write(f'Total Scores Generated : ' + '{:.2f}'.format(totalmain))
+        dfdict3 = {'Player_Name':mainName, 'Scores':mainScore, 'Price':mainPrice, 'Pos_code': mainPos_code,'Position':mainPosition,'Photo':mainPhoto}
+        dfmain = pd.DataFrame(dfdict3)
+        dfmain = dfmain.sort_values(by='Pos_code')
+        totalmain = dfmain.Scores.sum()
+        dfmain.loc[:, "Scores"] = dfmain["Scores"].map('{:.2f}'.format)
+        # AgGrid(dfmain[['Player_Name','Scores','Price','Position']],fit_columns_on_grid_load=True)
+        html2 = convert_df(dfmain)
+        st.write(f'Total Main Budget:{maintotal}')
+        st.markdown(
+            html2,
+            unsafe_allow_html=True
+        )
+        st.write(f'Total Subs Budget:{subtotal}')
+        html3 = convert_df(dfsubs)
+        st.markdown(
+            html3,
+            unsafe_allow_html=True
+        )
+        st.write(f'Total Budget:{maintotal + subtotal}')
+        st.write(f'Total Scores Generated : ' + '{:.2f}'.format(totalmain))
 
+        for i in range(dff.shape[0]):
+            if captmain[i].value()==1:
+                st.write(f'Captain: {names[i]}')
 
-            for i in range(dff.shape[0]):
-                if captmain[i].value() == 1:
-                    st.write(f'Captain: {names[i]}')
 elif choice=="Player_Analysis":
     k1,k2 = st.columns((3,2))
     with k1:
         # AgGrid(df,fit_columns_on_grid_load=True)
-        st.dataframe(df)
+        df['Points']=df['Total_Points']
+        df1 = df.drop(['Photo','Total_Points'], axis=1)
+        st.dataframe(df1)
+        # html = convert_df(df)
+        # st.markdown(
+        #     html,
+        #     unsafe_allow_html=True
+        # )
         # st._arrow_dataframe(df.style.highlight_max(axis=0))
     with k2:
         dfpoint = df.nlargest(5, 'Total_Points')
