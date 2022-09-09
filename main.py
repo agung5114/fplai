@@ -187,8 +187,8 @@ elif choice == "Player_Stats":
         # st.plotly_chart(fig2b)
     df['Points'] = df['Total_Points']
     df1 = df.drop(['Photo','Total_Points'], axis=1)
-    # AgGrid(df1,fit_columns_on_grid_load=True)
-    st.dataframe(df1)
+    AgGrid(df1,fit_columns_on_grid_load=True)
+#     st.dataframe(df1)
 elif choice=="Compare_Players":
     from plotly import graph_objects as go
     p1,p2 = st.columns((1,1))
